@@ -1,0 +1,55 @@
+aliases,animalID,sampleID,sampleType,genotyped,present2013,present2014,sex,age2013,age2014,grp2013,grp2014,entryDate_grp2013,entryType_grp2013,entryDate_grp2014,entryType_2014,exitDate,exitType,notes
+NA,1,AO-B-AP,hair,yes,yes,no,M,adult,NA,Iraq,NA,NA,NA,NA,NA,UNK,UNK,NA
+NA,2,AO-B-JU,hair,yes,yes,no,M,juvenile,NA,Iraq,NA,NA,NA,NA,NA,UNK,UNK,NA
+NA,3,AO-B-NV,hair,yes,yes,no,M,adult,NA,Iraq,NA,NA,NA,NA,NA,UNK,UNK,NA
+NA,4,AO-R-CR,hair,yes,yes,no,F,adult,NA,Iraq,NA,NA,NA,NA,NA,UNK,UNK,NA
+NA,5,AO-R-NV,hair,yes,yes,no,F,adult,NA,Iraq,NA,NA,NA,NA,NA,UNK,UNK,NA
+"AP-B-02, AP-B-0X, AP-X-OX, AP-B-AO",6,AP-B-AO,hair,yes,yes,yes,M,adult,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,NA
+NA,7,AP-B-CR,hair,yes,yes,no,M,adult,NA,Ata,NA,NA,NA,NA,NA,2013-Sept,UNK,NA
+"AP-B-01, AP-B-0X, AP-X-OX, AP-B-LV",8?,AP-B-LV,hair,yes,yes,yes,M,adult,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,NA
+AP-B-MP,9,AP-B-MO,hair,yes,yes,yes,M,adult,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,NA
+AP-B-LV,8?,AP-B-OX,fecal,yes,yes,yes,M,UNK,UNK,Ata,UNK,UNK,UNK,UNK,UNK,UNK,UNK,[RV: only present in File2 under “Animals trapped in 2013 only” – maybe same as AP-B-OX1 in File1/Membership-byID?]
+NA,10,AP-R-AP,hair,yes,yes,yes,F,adult,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,NA
+"AP-X-JU1, AP-X-IN, AP-R-NV",11?,AP-R-JU,hair,yes,yes,yes,F,infant,juvenile,Ata,Ata,2013-Dec,birth,NA,NA,NA,NA,"[RV: In File1 there are 2 AP-R-JU – the first is a pseudonym for AP-X-JU1 (juv in 2013, adult 2014), the second is a pseudonym for AP-X-IN (infant 2014); labeling this one as the infant 2014"
+"AP-R-JU, AP-X-JUS, AP-R-NV, AP-X-JU1",11?,AP-R-NV,hair,yes,yes,yes,F,juvenile,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,NA
+"AP-R-JU, AP-X-JUS, AP-R-NV, AP-X-JU1",11?,AP-X-JU1,fecal,yes,yes,yes,UNK,juvenile,adult,Ata,Ata,NA,NA,NA,NA,NA,NA,"[RV: In File1 there are 2 AP-R-JU – the first is a pseudonym for AP-X-JU1 (juv in 2013, adult 2014), the second is a pseudonym for AP-X-IN (infant 2014); labeling this one as the juv 2013/adult 2014"
+NA,12,CR-B-LV,hair,yes,yes,no,M,adult,NA,Camino,NA,NA,NA,NA,NA,NA,NA,NA
+NA,13,CR-B-VO,hair,yes,yes,no,M,adult,NA,Camino,NA,NA,NA,NA,NA,NA,NA,NA
+NA,14,CR-R-CR,hair,yes,yes,no,F,adult,NA,Camino,NA,NA,NA,NA,NA,NA,NA,NA
+NA,15,CR-R-MP,hair,yes,yes,no,F,adult,NA,Camino,NA,NA,NA,NA,NA,NA,NA,NA
+"LV-B-N2, LV-B-N1",16?,LV-B-CR,hair,yes,yes,yes,M,adult,adult,Chico,Chico,NA,NA,NA,NA,NA,NA,NA
+"LV-B-N1, LV-B-N2",16?,LV-B-MO,hair,yes,yes,yes,M,adult,adult,UNK,Chico,NA,NA,2013-Oct,immigration,NA,NA,"[RV: File1/Membership-byID says was an immigrant to Chico in 2013-Oct; File 1/Membership-byGroup has them in Chico under ""Trap2014"" column + in Mapa for month-specific columns from 2013-Oct through 2014-Sept]"
+"LV-B-MO, LV-B-CR",16?,LV-B-N1A,fecal,yes,yes,yes,M,adult,adult,Chico,Chico,NA,NA,NA,NA,NA,NA,"[RV: File1 says this should be LV-B-MO, File2 says should be LV-B-CR]"
+"LV-B-MO, LV-B-CR",16?,LV-B-N1B,fecal,no,yes,yes,M,adult,adult,Chico,Chico,NA,NA,NA,NA,NA,NA,"[RV: File1 says this should be LV-B-MO, File2 says should be LV-B-CR]"
+"LV-B-CR, LV-B-MO",16?,LV-B-N2,fecal,no,yes,yes,M,adult,adult,Chico,Chico,NA,NA,NA,NA,NA,NA,"[RV: File1 says this should be LV-B-CR, File2 says should be LV-B-MO]"
+LV-B-VO-M,17,LV-B-VO,hair,yes,yes,yes,M,adult,adult,Chico,Mapa,NA,NA,2013-Sept,immigration,NA,NA,NA
+NA,18,LV-R-NV,hair,yes,yes,yes,F,adult,adult,Chico,Chico,NA,NA,NA,NA,NA,NA,NA
+NA,19,LV-X-INA,hair,no,yes,yes,UNK,infant,juvenile,Chico,Chico,2013-Oct,birth,NA,resident,NA,NA,NA
+NA,20,LV-X-INB,hair,yes,yes,yes,UNK,infant,juvenile,Chico,Chico,2013-Oct,birth,NA,resident,NA,NA,NA
+NA,21,MO-B-LV,hair,yes,yes,yes,M,adult,adult,Chaco,Chaco,NA,NA,NA,NA,2014-Aug,emigration,[RV: immigrated to Mapa 2014-Aug]
+"MO-X-JU, MO-R-JU",22?,MO-R-CR,hair,yes,yes,yes,F,juvenile,adult,Chaco,Chaco,NA,NA,NA,NA,NA,NA,NA
+MO-X-JUS,23,MO-R-MP,hair,yes,yes,yes,F,juvenile,adult,Chaco,Chaco,NA,NA,NA,NA,NA,NA,NA
+MO-R-N3/nada,24,MO-R-NV,hair,yes,yes,yes,F,adult,adult,Chaco,Chaco,NA,NA,NA,NA,2014-July,trapping death,NA
+"MO-R-CR, MO-X-IN",22?,MO-X-JU,fecal,no,yes,yes,UNK,infant,juvenile,Chaco,Chaco,2013-Nov,birth,NA,NA,NA,NA,NA
+NA,25,NV-B-AP,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,2013-Oct,NA,NA
+NA,26,NV-B-CR,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,NA,NA,NA
+"NV-B-IN, NV-X-IN",27,NV-B-JU2,fecal,no,yes,yes,M,juvenile,adult,Mapa,Mapa,NA,NA,NA,NA,NA,NA,NA
+NA,28,NV-B-LV,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,2013-Aug,NA,NA
+NA,29,NV-B-MO,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,NA,NA,NA
+NA,30,NV-B-MP,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,2013-Oct,NA,NA
+NA,31,NV-B-NV,hair,yes,yes,no,M,juvenile,NA,Mapa,NA,NA,NA,NA,NA,NA,NA,NA
+AO-B-LV,32,NV-B-NV2,hair,yes,yes,yes,M,adult,adult,Iraq,Mapa,NA,NA,2013-Aug,immigration,NA,NA,[RV: File1: listed in Iraq under “Trap2013”; no other data in File 1/Membership-byGroup; File 2: listed in Iraq as of 7-May-2013]
+NA,33,NV-B-VP,hair,yes,yes,no,M,adult,NA,Mapa,NA,NA,NA,NA,NA,NA,NA,NA
+NV-X-IN,34,NV-R-JU,hair,yes,yes,yes,F,juvenile,adult,Mapa,Mapa,NA,NA,NA,NA,NA,NA,"[RV: I think this probably goes with “NV-R-JU1” in Membership-byGroup under Trap2013, then JU1 and JU2 go with JU2 and JU3 in Trap2014]"
+NA,35,NV-R-JU1,hair,yes,no,yes,F,NA,juvenile,NA,Mapa,NA,NA,NA,NA,NA,NA,NA
+NA,36,NV-R-JU2,hair,yes,no,yes,F,NA,juvenile,NA,Mapa,NA,NA,NA,NA,NA,NA,NA
+NA,37?,NV-R-LV,hair,yes,yes,yes,F,adult,adult,Mapa,Mapa,NA,NA,NA,NA,NA,NA,NA
+NV-R-LV,37?,NV-R-N3,fecal,no,yes,yes,F,adult,adult,Mapa,Mapa,NA,NA,NA,NA,NA,NA,NA
+NA,38,NV-R-VO,hair,yes,yes,yes,F,adult,adult,Mapa,Mapa,NA,NA,NA,NA,NA,NA,NA
+NA,39,VO-B-AP,hair,yes,yes,no,M,adult,NA,Chaco,NA,NA,NA,NA,NA,NA,NA,NA
+NA,40,VO-B-JU,hair,yes,yes,no,M,juvenile,NA,Chaco,NA,NA,NA,NA,NA,NA,NA,NA
+MO-B-MO,41,VO-B-MO,hair,yes,yes,yes,M,adult,adult,Chaco,Chaco,NA,NA,NA,NA,2014-July,trapping death,Collar switched to MO-B-MO
+NA,42,VO-R-AO,hair,yes,yes,no,F,adult,NA,Chaco,NA,NA,NA,NA,NA,NA,NA,NA
+MO-R-MP (according to genotypes),43,VO-R-JU1,hair,yes,yes,yes,F,juvenile,adult,Chaco,Chaco,NA,NA,NA,NA,NA,NA,NA
+MO-R-CR (according to genotypes),44,VO-R-JU2,hair,yes,yes,yes,F,juvenile,adult,Chaco,Chaco,NA,NA,NA,NA,NA,NA,NA
+NA,45,VO-R-LV,hair,yes,yes,no,F,adult,NA,Chaco,NA,NA,NA,NA,NA,NA,NA,NA

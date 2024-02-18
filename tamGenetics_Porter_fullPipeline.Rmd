@@ -1,0 +1,1273 @@
+---
+title: "tamGenetics_Porter_fullPipeline_v2"
+author: "Rachel Voyt"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview
+
+This pipeline includes all data analyses of microsatellite genotypes from the saddleback tamarin population at Estación Biologíca Tahuamanu in 2013 and 2014 for use in manuscripts led by Leila Porter.
+
+# 1 Packages
+
+## 1.1 All packages
+
+```{r, echo=FALSE}
+# library(adegenet) # (installation instructions below); assess allele diversity
+library(allelematch) # (install from tar.gz file from Todd); identify duplicates
+library(ggpubr) # data visualization
+# library(gt) # (installation instructions below); nice tables
+library(kableExtra)
+library(naniar) # to replace certain df values with na
+library(pegas) # HWE test
+library(plyr) # split list, apply function, return results in df
+library(related) # (install from tar.gz file); pairwise relatedness
+library(rstatix) # stats
+library(tidyverse) # general data manipulation
+```
+
+## 1.2 adegenet installation
+
+'adegenet' doesn't want to install due to an issue with the dependency 'igraph'. Just in case anyone else has this problem (particularly Linux users), my troubleshooting steps are outlined below.
+
+1)  Install 'igraph'
+
+```{r, eval=FALSE}
+install.packages("igraph")
+```
+
+'igraph' won't install due to issues with gfortran and anaconda -- see [igraph GitHub issue #257](https://github.com/igraph/rigraph/issues/275) for more details and follow steps outlined in [this comment](https://github.com/igraph/rigraph/issues/275#issuecomment-514165692) to fix.
+
+2)  Success! Load 'igraph' below:
+
+```{r, echo=FALSE}
+library(igraph)
+```
+
+3)  And try installing 'adegenet' again - success!
+
+```{r, eval=FALSE}
+install.packages("adegenet")
+```
+
+```{r, echo=FALSE}
+library(adegenet)
+```
+
+## 1.3 gt installation
+
+Package 'gt' doesn't want to install either due to failed configuration of the libv8 engine library.
+
+1)  Manually install libv8:
+
+```{bash, eval = F}
+sudo apt-get update -y
+sudo apt-get install -y libv8-dev
+```
+
+2)  And try to install 'gt' again - success!
+
+```{r, eval=FALSE}
+install.packages("gt")
+```
+
+```{r, echo=FALSE}
+library(gt)
+```
+
+# 2 Data
+
+## 2.1 Original microsatellite genotypes
+
+Load data and remove individuals with more than 20% missing data
+
+```{r}
+data <- read.csv("porterSaddlebacks_finalGenotypes_April2021.csv")
+data <- data[which(rowMeans(!is.na(data)) > 0.8),]
+```
+
+## 2.2 Metadata
+
+```{r}
+# All individuals
+md <- read.csv("./tamarinGenetics_Porter_individualInfo.csv")
+
+# Genotyped individuals only
+md_genotyped <- md %>%
+  filter(genotyped=="yes")
+```
+
+## 2.3 2013 & 2014 subsets
+
+```{r}
+# All individuals
+indivs2013 <- filter(md, present2013 %in% "yes")[,]$sampleID
+indivs2014 <- filter(md, present2014 %in% "yes")[,]$sampleID
+
+# Adults only
+adults2013 <- filter(md, age2013 %in% "adult")[,]$sampleID
+adults2014 <- filter(md, age2014 %in% "adult")[,]$sampleID
+
+# Adult females & males
+adults2013F <- filter(md, age2013 %in% "adult" & sex %in% "F")[,]$sampleID
+adults2013M <- filter(md, age2013 %in% "adult" & sex %in% "M")[,]$sampleID
+
+adults2014F <- filter(md, age2014 %in% "adult" & sex %in% "F")[,]$sampleID
+adults2014M <- filter(md, age2014 %in% "adult" & sex %in% "M")[,]$sampleID
+```
+
+# 3 Identify duplicates
+
+We can identify duplicates using the package 'allelematch', which includes functions that help determine how how many alleles should differ before assigning samples as "unique" or "duplicates".
+
+NOTE - be sure to install 'allelematch' from the tar.gz file that Todd (package point-person) sent! The version up on CRAN hasn't been updated yet and won't work with current versions of R.
+
+## 3.1 Create an amDataset object
+
+```{r}
+am <- amDataset(data, indexColumn = "sampleID")
+```
+
+## 3.2 Find optimal criterion of dissimilarity to find unique individuals
+
+The optimal criterion of dissimilarity, also known as "m-hat", implies that samples can differ by up to "m-hat" mismatching alleles, or the equivalent in missing alleles, to be declared the same unique individual. We can estimate the value of this criterion using the function 'amUniqueProfile' and setting 'guessOptimum' to TRUE.
+
+```{r}
+amUniqueProfile(am, doPlot = T, guessOptimum = T)
+```
+
+'allelematch' suggests an alleleMismatch criterion of 4 (matchThreshold = 0.82). However, this is based on a "NoSecondMinimum" profile, meaning that allelematch cannot make a confident assessment of the unique genotypes within the range of the alleleMismatch criterion examined (by default this is 0% to 40% of allele columns mismatching). We can therefore disregard the optimal alleleMismatch criterion.
+
+'allelematch' documentation suggests that in these cases, removing samples with more than a threshold amount of missing data may help reduce ambiguity - since we've already done this, the next recommended step is simply to set a high alleleMismatch criterion. However, this biases the data toward those who are unrelated, which we don't want given that identifying relatedness between individuals is a primary objective of the present study.
+
+As such, at this point I'm opting to move forward with a alleleMismatch criterion of 3, chosen because this is where the number of unique individuals first levels out in the plot above.
+
+## 3.3 Find potential duplicate individuals
+
+To find potential duplicates in our dataset, we first need to write up the 'allelematch' results, which we can do as both html and csv files:
+
+```{r}
+uniqueIndiv <- amUnique(am, alleleMismatch = 3)
+summary(uniqueIndiv, html = "./results_R/alleleMatch_results_7Nov2022.html")
+amCSV.amUnique(uniqueIndiv, "./results_R/alleleMatch_results_7Nov2022.csv", uniqueOnly = F)
+```
+
+We can then view the pairs that were assigned a similarity score (i.e., those identified as potential duplicates)...
+
+```{r}
+amResults <- read.csv("./results_R/alleleMatch_results_7Nov2022.csv")
+
+amResults_dups <- amResults %>%
+  filter(!is.na(score))
+
+amResults_dups
+```
+
+...and use the assigned similarity scores alongside the html file to easily view which alleles differ between the potential matches (mismatches are highlighted in red in the html file). From this, we see the following:
+
+-   MO-R-MP/VO-R-JU1 - 100% similarity score; no mismatched alleles
+-   MO-R-CR/VO-R-JU2 - 95% similarity score; differ at only one allele (at locus D8s260), where the former is homozygous and the latter is heterozygous - likely a product of allelic dropout
+-   LV-B-MO/LV-B-N1A - 91% similarity score; differ at two alleles (at loci D13s160 and Leon15), where LV-B-N1A was homozygous and LV-B-MO was heterozygous (with a common allele) - likely also the product of allelic dropout
+-   AP-B-AO/AP-X-JU1 - 86% similarity score; differ at three alleles (at loci D13s160, Leon21, and Leon26); the first two loci could be allelic dropout, but Leon21 is a different heterozygous combination for each sample ID
+
+Available field records (e.g., sample collection dates, observations of individual presence/absence) support the assignment of all but AP-B-AO/AP-X-JU1 as duplicates.
+
+## 3.4 Create clean copy of dataset
+
+We can now remove duplicate individuals that are homozygous at the mismatched-loci - this yields a dataset of 45 unique multilocus genotypes assumed to represent 45 unique individuals.
+
+```{r}
+data_clean <- data %>%
+  filter(!sampleID %in% c("LV-B-N1A", "MO-R-CR", "MO-R-MP"))
+```
+
+# 4 Allelic diversity
+
+Now that all duplicates have been removed, we can assess allelic diversity with the package 'adegenet'.
+
+Allelic diversity measures include:
+
+-   Number of alleles per locus
+-   Effective number of alleles per locus
+-   Observed vs. expected heterozygosity
+-   Whether locus is in Hard-Weinberg Equilibrium
+
+## 4.1 Create genind files
+
+'adegenet' requires data to be in genind file format, so we need to create these files before moving forward
+
+### 4.1.1 Reformat data
+
+First we need to do the following:
+
+-   Create new columns that will hold both allele calls
+-   Assign a number to each allele for each locus and merge alleles 1 & 2 into single column
+-   Subset data to only merged allele columns
+
+```{r}
+genos_forGenind <- data_clean %>%
+  add_column(D13s160 = NA) %>%
+  add_column(D4s111 = NA) %>%
+  add_column(D8s260 = NA) %>%
+  add_column(Leon15 = NA) %>%
+  add_column(Leon2 = NA) %>%
+  add_column(Leon21 = NA) %>%
+  add_column(Leon26 = NA) %>%
+  add_column(LL1118 = NA) %>%
+  add_column(Locus51 = NA) %>%
+  add_column(SB30 = NA) %>%
+  add_column(SB38 = NA) %>%
+  mutate(D13s160 = 
+           paste(match(D13s160_allele1, unique(c(na.omit(D13s160_allele1), na.omit(D13s160_allele2)))),
+                 match(D13s160_allele2, unique(c(na.omit(D13s160_allele1), na.omit(D13s160_allele2)))),
+                       sep = ":")) %>%
+  mutate(D4s111 = 
+           paste(match(D4s111_allele1, unique(c(na.omit(D4s111_allele1), na.omit(D4s111_allele2)))),
+                 match(D4s111_allele2, unique(c(na.omit(D4s111_allele1), na.omit(D4s111_allele2)))),
+                 sep = ":")) %>%
+  mutate(D8s260 = 
+           paste(match(D8s260_allele1, unique(c(na.omit(D8s260_allele1), na.omit(D8s260_allele2)))),
+                 match(D8s260_allele2, unique(c(na.omit(D8s260_allele1), na.omit(D8s260_allele2)))),
+                 sep = ":")) %>%
+  mutate(Leon15 = 
+           paste(match(Leon15_allele1, unique(c(na.omit(Leon15_allele1), na.omit(Leon15_allele2)))),
+                 match(Leon15_allele2, unique(c(na.omit(Leon15_allele1), na.omit(Leon15_allele2)))),
+                 sep = ":")) %>%
+  mutate(Leon2 = 
+           paste(match(Leon2_allele1, unique(c(na.omit(Leon2_allele1), na.omit(Leon2_allele2)))),
+                 match(Leon2_allele2, unique(c(na.omit(Leon2_allele1), na.omit(Leon2_allele2)))),
+                 sep = ":")) %>%
+  mutate(Leon21 = 
+           paste(match(Leon21_allele1, unique(c(na.omit(Leon21_allele1), na.omit(Leon21_allele2)))),
+                 match(Leon21_allele2, unique(c(na.omit(Leon21_allele1), na.omit(Leon21_allele2)))),
+                 sep = ":")) %>%
+  mutate(Leon26 = 
+           paste(match(Leon26_allele1, unique(c(na.omit(Leon26_allele1), na.omit(Leon26_allele2)))),
+                 match(Leon26_allele2, unique(c(na.omit(Leon26_allele1), na.omit(Leon26_allele2)))),
+                 sep = ":")) %>%
+  mutate(LL1118 = 
+           paste(match(LL1118_allele1, unique(c(na.omit(LL1118_allele1), na.omit(LL1118_allele2)))),
+                 match(LL1118_allele2, unique(c(na.omit(LL1118_allele1), na.omit(LL1118_allele2)))),
+                 sep = ":")) %>%
+  mutate(Locus51 = 
+           paste(match(Locus51_allele1, unique(c(na.omit(Locus51_allele1), na.omit(Locus51_allele2)))),
+                 match(Locus51_allele2, unique(c(na.omit(Locus51_allele1), na.omit(Locus51_allele2)))),
+                 sep = ":")) %>%
+  mutate(SB30 = 
+           paste(match(SB30_allele1, unique(c(na.omit(SB30_allele1), na.omit(SB30_allele2)))),
+                 match(SB30_allele2, unique(c(na.omit(SB30_allele1), na.omit(SB30_allele2)))),
+                 sep = ":")) %>%
+  mutate(SB38 = 
+           paste(match(SB38_allele1, unique(c(na.omit(SB38_allele1), na.omit(SB38_allele2)))),
+                 match(SB38_allele2, unique(c(na.omit(SB38_allele1), na.omit(SB38_allele2)))),
+                 sep = ":")) %>%
+  select(sampleID, D13s160, D4s111, D8s260, D4s111, Leon15, Leon2, Leon21, Leon26, LL1118, Locus51, SB30, SB38) %>%
+  as.data.frame()
+```
+
+### 4.1.2 2013 & 2014 subsets
+
+```{r}
+# Subset data to 2013 and 2014 adults
+genos_forGenind_adults2013 <- genos_forGenind %>%
+  filter(sampleID %in% adults2013)
+
+genos_forGenind_adults2014 <- genos_forGenind %>%
+  filter(sampleID %in% adults2014)
+
+# Genind files
+genind_2013 <- df2genind(X=genos_forGenind_adults2013[,c(2:12)], sep=":", ncode=NULL, 
+                         ind.names=genos_forGenind_adults2013$sampleID, loc.names=NULL, 
+                         NA.char="NA", ploidy=2, type="codom", strata=NULL, hierarchy=NULL)
+
+genind_2014 <- df2genind(X=genos_forGenind_adults2014[,c(2:12)], sep=":", ncode=NULL, 
+                         ind.names=genos_forGenind_adults2014$sampleID, loc.names=NULL, 
+                         NA.char="NA", ploidy=2, type="codom", strata=NULL, hierarchy=NULL)
+```
+
+## 4.2 Allelic diversity summary
+
+Now that we have our genind files, we can use the summary() function from 'adegenet' to provide the following: - Number of alleles per locus - Observed heterozygosity - Expected heterozygosity
+
+```{r}
+genindSummary_2013 <- summary(genind_2013)
+genindSummary_2014 <- summary(genind_2014)
+```
+
+## 4.3 Effective number of alleles
+
+It's also helpful to obtain the effective number of alleles, which is a measure of the number of equally frequent alleles it would take to achieve a given level of gene diversity (can use expected heterozygosity here). This measure is helpful when comparing populations with the same number of total alleles, but very different distributions of allele frequencies.
+
+The formula to calculate the effective number of alleles given expected heterozygosity for each locus is as follows:
+
+$$
+A_E = \frac{1}{1-H_e}
+$$
+
+Which we can then apply to our 2013 and 2014 populations:
+
+```{r}
+Ae_2013 <- 1/(1 - genindSummary_2013$Hexp)
+Ae_2014 <- 1/(1 - genindSummary_2014$Hexp)
+```
+
+And use to compare the number of alleles present in 2013 vs. 2014 via a paired t-test, which shows no significant difference (p = 0.14).
+
+```{r}
+Ae_2013_df <- as.data.frame(Ae_2013) %>%
+  rownames_to_column(var = "Locus")
+
+Ae_2014_df <- as.data.frame(Ae_2014) %>%
+  rownames_to_column(var = "Locus")
+
+Ae_both_df <- merge(Ae_2013_df, Ae_2014_df, by = "Locus")
+
+t.test(Ae_both_df$Ae_2013, Ae_both_df$Ae_2014, paired = T)
+```
+
+## 4.4 Observed vs. expected heterozygosity
+
+### 4.4.1 Bartlett test of homogeneity of variances
+
+We can then test whether there's a significant difference exists between mean observed and expected heterozygosity values using the Bartlett test of homogeneity of variances.
+
+```{r}
+bartlett.test(list(genindSummary_2013$Hexp, genindSummary_2013$Hobs))
+bartlett.test(list(genindSummary_2014$Hexp, genindSummary_2014$Hobs))
+```
+
+### 4.4.2 Hardy-Weinberg Equilibrium test
+
+The Hardy-Weinberg test function in 'adegenet' has been removed and replaced by 'hw.test' in the package 'pegas'. This function uses both the classical chi-squared test based on expected genotype frequencies calculated from the allelic frequencies as well as an exact test based on Monte Carlo permutations of alleles.
+
+```{r}
+hwe_2013 <- hw.test(genind_2013, B = 1000)
+hwe_2014 <- hw.test(genind_2014, B = 1000)
+```
+
+## 4.5 Table 1: Genetic variation
+
+Summary of genetic variation at each locus, including allelic diversity + heterozygosity in a table using 'gt'
+
+```{r}
+allDiv_2013_tbl <-
+  tibble(
+    Locus = c("D13S160", "D4S111", "D8S260", "LEON2", "LEON15", "LEON21", "LEON26",
+              "LL1118", "LOCUS51", "SB30", "SB38"),
+    N = 32,
+    Na = genind_2013@loc.n.all,
+    Ne = signif((1/(1-summary(genind_2013)$Hexp)),2),
+    Ho = signif(summary(genind_2013)$Hobs,2),
+    He = signif(summary(genind_2013)$Hexp,2),
+    HWE = c("", "", "", "", "", "", "", "", "", "", "") # using Monte-Carlo p-values (Pr.exact)
+  )
+
+allDiv_2014_tbl <-
+  tibble(
+    Locus = c("D13S160", "D4S111", "D8S260", "LEON2", "LEON15", "LEON21", "LEON26",
+              "LL1118", "LOCUS51", "SB30", "SB38"),
+    N = 19,
+    Na = genind_2014@loc.n.all,
+    Ne = signif((1/(1-summary(genind_2014)$Hexp)),2),
+    Ho = signif(summary(genind_2014)$Hobs,2),
+    He = signif(summary(genind_2014)$Hexp,2),
+    HWE = c("", "*", "", "", "", "", "", "*", "", "", "") # using Monte-Carlo p-values (Pr.exact)
+  )
+
+allelicDiversity_tbl <- rbind(allDiv_2013_tbl, allDiv_2014_tbl)
+```
+
+Make a prettier table with package 'gt':
+
+```{r}
+gt_tbl <- gt(allelicDiversity_tbl)
+
+gt_tbl <- gt_tbl %>%
+  tab_row_group(
+    label = "2014 Adults",
+    rows = 12:22
+  ) %>%
+  tab_row_group(
+    label = "2013 Adults",
+    rows = 1:11
+  ) %>%
+  cols_width(everything() ~ px(150)) %>%
+  cols_align(align = "center", columns = c("N", "Na", "Ne", "Ho", "He", "HWE"))
+gt_tbl
+```
+
+```{r, eval=FALSE}
+gt_tbl %>%
+  gtsave("table1_locusVariation.png", vwidth = 1300, vheight = 700)
+```
+
+# 5 Relatedness
+
+I'll be generating r-values and assessing within and between-group relatedness using the package 'related'. The tutorial for 'related' can be found [here](https://github.com/timothyfrasier/related/blob/master/Tutorial.pdf).
+
+## 5.1 Create 'related' files
+
+'related' requires genotype files to be in text file format, with one allele per column and no column headings.
+
+### 5.1.1 All individuals
+
+```{r}
+# All individuals combined
+genos_forRelated <- data_clean
+names(genos_forRelated) <- NULL
+related_allCombined <- readgenotypedata(genos_forRelated)
+```
+
+### 5.1.2 2013 & 2014 subsets
+
+```{r}
+# 2013 individuals only
+genos_forRelated_all2013 <- data_clean %>%
+  filter(sampleID %in% indivs2013)
+names(genos_forRelated_all2013) <- NULL
+related_all2013 <- readgenotypedata(genos_forRelated_all2013)
+
+# 2014 individuals only
+genos_forRelated_all2014 <- data_clean %>%
+  filter(sampleID %in% indivs2014)
+names(genos_forRelated_all2014) <- NULL
+related_all2014 <- readgenotypedata(genos_forRelated_all2014)
+```
+
+## 5.2 Compare relatedness estimators
+
+Prior to deciding which relatedness estimator for our analysis, it's a good idea to test the performance of different estimators on simulated data sets with the same locus characteristics as our own. We can do this with 'related' in two ways:
+
+First, we can compare moment-estimators using the 'related' function compareestimators() (section 5.2.1). Then, we can compare with maximum-likelihood estimators using a sort of clunky, but functional set of manual steps (section 5.2.2).
+
+### 5.2.1 Compare moment-estimators
+
+Below I'm using the comparestimators() function to compare lynchli, lynchrd, quellergt, and wang estimators. This function will generate simulated genotypes of known relatedness, calculate relatedness values using those four estimators, and plot the data to visualize it. Here I'm using separate data frames for 2013 and 2014 that include all individuals (including adults and non-adults) and 100 simulated pairs of individuals for each type of relationship.
+
+The output includes 1) a graph of the data, organized by relationship type and estimator, 2) the correlation coefficient (Pearson's) between observed and expected relatedness values for each estimator. We can use this to see which estimator correlates best with the expected values.
+
+1)  Run comparestimators() function
+
+```{r}
+compEst_2013 <- compareestimators(related_all2013, 100) 
+compEst_2014 <- compareestimators(related_all2014, 100)
+```
+
+2)  Visualize comparison results for each relationship type
+
+```{r}
+compEst_2013
+compEst_2014
+```
+
+3)  Compare correlation coefficients
+
+(note - I'm not sure how to extract these from the comparestimators() results, below is a table of the results from my run of the function)
+
+```{r}
+# Correlation coefficients from comparestimators()
+compEst_2013a_data <- c(0.879077, 0.871872, 0.853382, 0.871952)
+compEst_2013b_data <- c(0.874931, 0.858175, 0.838660, 0.855826)
+compEst_2014a_data <- c(0.844956, 0.840872, 0.802049, 0.835537)
+compEst_2014b_data <- c( 0.851458, 0.848176, 0.832502, 0.848914)
+
+# Create df of corr coefficients
+compEst_point_df <- data.frame(compEst_2013a_data, compEst_2013b_data, compEst_2014a_data, compEst_2014b_data, row.names = c("wang", "lynchli", "lynchrd", "quellergt"))
+```
+
+#### Table 2: Point estimators
+
+Highest (red) and second highest (orange) correlation coefficients results from first (a) and second (b) runs of comparestimators() for 2013 and 2014
+
+```{r}
+# Find highest correlation coefficients for each run
+compEst_point_max1 <- compEst_point_df %>%
+  summarise(across(1:4, max)) %>%
+  as.vector() %>%
+  unname()
+
+# Find second-highest correlation coefficients for each run
+compEst_point_max2 <- compEst_point_df %>%
+  naniar::replace_with_na_all(condition = ~.x %in% as.numeric(compEst_point_max1)) %>%
+  dplyr::summarise(across(1:4, max, na.rm = T)) %>%
+  as.vector() %>%
+  unname()
+
+# Table
+compEst_point_df %>%
+  mutate(across(1:4, ~if_else(row_number() %in% which(. %in% compEst_point_max1),
+                               cell_spec(.,format =  "html",
+                                         color = "orangered", bold = TRUE), as.character(.)))) %>% 
+  mutate(across(1:4, ~if_else(row_number() %in% which(. %in% compEst_point_max2),
+                               cell_spec(.,format =  "html",
+                                         color = "darkorange", bold = TRUE), as.character(.)))) %>%
+  kbl(escape = FALSE) %>% 
+  kable_classic(full_width = T, 
+                font_size = 10)
+```
+
+When comparing only the four moment-estimators, the Wang estimator performed best in both 2013 and 2014, closely followed by Lynchli and Queller & Goodnight, which performed either second or third best (their rank will sometimes switch with additional runs of the simulation) for 2013 and 2014.
+
+### 5.2.2 Compare maximum-likelihood estimators
+
+To compare moment-estimators to maximum-likelihood estimators, we need to do some custom comparisons. Here again I'm doing separate comparisons for 2013 and 2014.
+
+#### Generate simulated individuals
+
+```{r}
+simdata_2013 <- familysim(related_all2013$freqs, 100)
+simdata_2014 <- familysim(related_all2014$freqs, 100)
+```
+
+#### Estimate relatedness
+
+Here I'm using maximum-likelihood estimators dyadml & trioml and moment-estimators wang & quellergt. NOTE that I'm opting not to allow for inbreeding, as only the the dyadml and trioml are able to do so.
+
+NOTE - the likelihood estimators take a long time to run!
+
+```{r, eval=FALSE}
+output_2013 <- coancestry(simdata_2013, dyadml = 1, trioml = 1, quellergt = 1, wang = 1)
+output_2014 <- coancestry(simdata_2014, dyadml = 1, trioml = 1, quellergt = 1, wang = 1)
+```
+
+The resulting output files will contain *all* pairwise estimates of relatedness, rather than just the ones that we are interested in. To reduce this to only the desired values, use the cleanuprvals() function.
+
+```{r}
+simrel_2013 <- cleanuprvals(output_2013$relatedness, 100)
+simrel_2014 <- cleanuprvals(output_2014$relatedness, 100)
+```
+
+#### 2013 comparisons
+
+Next, we need to parse out the data based on relatedness type and estimator used. In the file, the first 100 pairs are parent-offspring, the second set of 100 are full-sibs, the third set of 100 are half-sibs, and the fourth (last) set of 100 are unrelated (numbers would change if simulated a different number of individuals).
+
+In this file, the trioml estimates are in column 5, the wang estimates are in column 6, the quellergt estimates are in column 10, and the dyadml estimates are in column 11 (see table on p. 8). The code below selects the range of rows and columns corresponding to the appropriate relatedness value and estimator.
+
+```{r}
+triomlpo_2013 <- simrel_2013[1:100, 5]
+triomlfs_2013 <- simrel_2013[(100 +1) : (2*100), 5]
+triomlhs_2013 <- simrel_2013[((2*100) + 1) : (3*100), 5]
+triomlur_2013 <- simrel_2013[((3*100) + 1) : (4*100), 5]
+wangpo_2013 <- simrel_2013[1:100, 6]
+wangfs_2013 <- simrel_2013[(100 +1) : (2*100), 6]
+wanghs_2013 <- simrel_2013[((2*100) + 1) : (3*100), 6]
+wangur_2013 <- simrel_2013[((3*100) + 1) : (4*100), 6]
+quellergtpo_2013 <- simrel_2013[1:100, 10]
+quellergtfs_2013 <- simrel_2013[(100 +1) : (2*100), 10]
+quellergths_2013 <- simrel_2013[((2*100) + 1) : (3*100), 10]
+quellergtur_2013 <- simrel_2013[((3*100) + 1) : (4*100), 10]
+dyadmlpo_2013 <- simrel_2013[1:100, 11]
+dyadmlfs_2013 <- simrel_2013[(100 +1) : (2*100), 11]
+dyadmlhs_2013 <- simrel_2013[((2*100) + 1) : (3*100), 11]
+dyadmlur_2013 <- simrel_2013[((3*100) + 1) : (4*100), 11]
+```
+
+Next, we need to create a list of labels for the different estimators, with each repeated the appropriate number of times (100 in this case).
+
+```{r}
+trioml_2013 <- rep("tri", 100)
+wang_2013 <- rep("W", 100)
+quellergt_2013 <- rep("QG", 100)
+dyadml_2013 <- rep("di", 100)
+estimator2_2013 <- c(trioml_2013, wang_2013, quellergt_2013, dyadml_2013)
+Estimator_2013 <- rep(estimator2_2013, 4)
+```
+
+Create a list of labels for the different relatedness types
+
+```{r}
+po_2013 <- rep("Parent-Offspring", (4*100))
+fs_2013 <- rep("Full-Sibs", (4*100))
+hs_2013 <- rep("Half-Sibs", (4*100))
+ur_2013 <- rep("Unrelated", (4*100))
+relationship_2013 <- c(po_2013, fs_2013, hs_2013, ur_2013)
+```
+
+Combine the different values for each estimator based on relatedness type, as lists.
+
+```{r}
+relatednesspo_2013 <- c(triomlpo_2013, wangpo_2013, quellergtpo_2013, dyadmlpo_2013)
+relatednessfs_2013 <- c(triomlfs_2013, wangfs_2013, quellergtfs_2013, dyadmlfs_2013)
+relatednesshs_2013 <- c(triomlhs_2013, wanghs_2013, quellergths_2013, dyadmlhs_2013)
+relatednessur_2013 <- c(triomlur_2013, wangur_2013, quellergtur_2013, dyadmlur_2013)
+Relatedness_Value_2013 <- c(relatednesspo_2013, relatednessfs_2013, relatednesshs_2013, relatednessur_2013)
+```
+
+Combine the data
+
+```{r}
+combineddata_2013 <- as.data.frame(cbind(Estimator_2013, relationship_2013, Relatedness_Value_2013))
+combineddata_2013$Relatedness_Value_2013 <- as.numeric(as.character(combineddata_2013$Relatedness_Value_2013))
+```
+
+Plot the data. You may need to play around with the range of values of the y-axis (the ylim argument) so that it better captures your data.
+
+```{r}
+ggplot(combineddata_2013, aes(x = Estimator_2013, y = Relatedness_Value_2013), ylim = c(-0.5, 1.0)) +
+  geom_boxplot() + 
+  facet_wrap(~ relationship_2013)
+```
+
+You can also calculate the correlation coefficient between the observed values for each estimator and the expected values. To do this, first create vectors containing the appropriate relatedness values the appropriate number of times (in this case, 100 times).
+
+```{r}
+urval_2013 <- rep(0, 100)
+hsval_2013 <- rep(0.25, 100)
+fsval_2013 <- rep(0.5, 100)
+poval_2013 <- rep(0.5, 100)
+relvals_2013 <- c(urval_2013, hsval_2013, fsval_2013, poval_2013)
+```
+
+Now you can just compare the observed and expected values, selecting the appropriate column from the simrel data data frame for each estimator (the trioml estimates are in column 5, the wang estimates are in column 6, the quellergt estimates are in column 10, and the dyadml estimates are in column 11.
+
+```{r}
+triomlcor_2013 <- cor.test(relvals_2013, simrel_2013[,5]) # trioml -0.7415352
+wangcor_2013 <- cor.test(relvals_2013, simrel_2013[,6]) # wang -0.6902115
+quellergtcor_2013 <- cor.test(relvals_2013, simrel_2013[,10]) # quellergt -0.6918996
+dyadmlcor_2013 <- cor.test(relvals_2013, simrel_2013[,11]) # dyadml -0.7321937
+
+compEst_ml_df2013 <- as.data.frame(c(wangcor_2013$estimate, quellergtcor_2013$estimate, dyadmlcor_2013$estimate, triomlcor_2013$estimate)) %>%
+  dplyr::rename("cor_2013" = "c(wangcor_2013$estimate, quellergtcor_2013$estimate, dyadmlcor_2013$estimate, triomlcor_2013$estimate)")
+```
+
+#### 2014 comparisons
+
+```{r}
+triomlpo_2014 <- simrel_2014[1:100, 5]
+triomlfs_2014 <- simrel_2014[(100 +1) : (2*100), 5]
+triomlhs_2014 <- simrel_2014[((2*100) + 1) : (3*100), 5]
+triomlur_2014 <- simrel_2014[((3*100) + 1) : (4*100), 5]
+wangpo_2014 <- simrel_2014[1:100, 6]
+wangfs_2014 <- simrel_2014[(100 +1) : (2*100), 6]
+wanghs_2014 <- simrel_2014[((2*100) + 1) : (3*100), 6]
+wangur_2014 <- simrel_2014[((3*100) + 1) : (4*100), 6]
+quellergtpo_2014 <- simrel_2014[1:100, 10]
+quellergtfs_2014 <- simrel_2014[(100 +1) : (2*100), 10]
+quellergths_2014 <- simrel_2014[((2*100) + 1) : (3*100), 10]
+quellergtur_2014 <- simrel_2014[((3*100) + 1) : (4*100), 10]
+dyadmlpo_2014 <- simrel_2014[1:100, 11]
+dyadmlfs_2014 <- simrel_2014[(100 +1) : (2*100), 11]
+dyadmlhs_2014 <- simrel_2014[((2*100) + 1) : (3*100), 11]
+dyadmlur_2014 <- simrel_2014[((3*100) + 1) : (4*100), 11]
+```
+
+Next, we need to create a list of labels for the different estimators, with each repeated the appropriate number of times (100 in this case).
+
+```{r}
+trioml_2014 <- rep("tri", 100)
+wang_2014 <- rep("W", 100)
+quellergt_2014 <- rep("QG", 100)
+dyadml_2014 <- rep("di", 100)
+estimator2_2014 <- c(trioml_2014, wang_2014, quellergt_2014, dyadml_2014)
+Estimator_2014 <- rep(estimator2_2014, 4)
+```
+
+Create a list of labels for the different relatedness types
+
+```{r}
+po_2014 <- rep("Parent-Offspring", (4*100))
+fs_2014 <- rep("Full-Sibs", (4*100))
+hs_2014 <- rep("Half-Sibs", (4*100))
+ur_2014 <- rep("Unrelated", (4*100))
+relationship_2014 <- c(po_2014, fs_2014, hs_2014, ur_2014)
+```
+
+Combine the different values for each estimator based on relatedness type
+
+```{r}
+# First combine as lists
+relatednesspo_2014 <- c(triomlpo_2014, wangpo_2014, quellergtpo_2014, dyadmlpo_2014)
+relatednessfs_2014 <- c(triomlfs_2014, wangfs_2014, quellergtfs_2014, dyadmlfs_2014)
+relatednesshs_2014 <- c(triomlhs_2014, wanghs_2014, quellergths_2014, dyadmlhs_2014)
+relatednessur_2014 <- c(triomlur_2014, wangur_2014, quellergtur_2014, dyadmlur_2014)
+Relatedness_Value_2014 <- c(relatednesspo_2014, relatednessfs_2014, relatednesshs_2014, relatednessur_2014)
+
+# Combine data
+combineddata_2014 <- as.data.frame(cbind(Estimator_2014, relationship_2014, Relatedness_Value_2014))
+combineddata_2014$Relatedness_Value_2014 <- as.numeric(as.character(combineddata_2014$Relatedness_Value_2014))
+```
+
+Plot the data
+
+```{r}
+ggplot(combineddata_2014, aes(x = Estimator_2014, y = Relatedness_Value_2014), ylim = c(-0.5, 1.0)) +
+  geom_boxplot() + 
+  facet_wrap(~ relationship_2014)
+```
+
+Calculate the correlation coefficient between the observed values for each estimator and the expected values
+
+```{r}
+# Create vectors containing r-values
+urval_2014 <- rep(0, 100)
+hsval_2014 <- rep(0.25, 100)
+fsval_2014 <- rep(0.5, 100)
+poval_2014 <- rep(0.5, 100)
+relvals_2014 <- c(urval_2014, hsval_2014, fsval_2014, poval_2014)
+
+# Compare observed vs. expected values
+wangcor_2014 <- cor.test(relvals_2014, simrel_2014[,6]) # wang 
+quellergtcor_2014 <- cor.test(relvals_2014, simrel_2014[,10]) # quellergt 
+dyadmlcor_2014 <- cor.test(relvals_2014, simrel_2014[,11]) # dyadml
+triomlcor_2014 <- cor.test(relvals_2014, simrel_2014[,5]) # trioml
+
+compEst_ml_df2014 <- as.data.frame(c(wangcor_2014$estimate, quellergtcor_2014$estimate, dyadmlcor_2014$estimate, triomlcor_2014$estimate)) %>%
+  dplyr::rename("cor_2014" = "c(wangcor_2014$estimate, quellergtcor_2014$estimate, dyadmlcor_2014$estimate, triomlcor_2014$estimate)")
+```
+
+#### Table 3: Point vs. likelihood estimators
+
+Highest (red) and second highest (orange) correlation coefficient resulting from comparisons of wang, quellergt, dyadml, and trioml relatedness estimators for 2013 and 2014.
+
+```{r}
+# Create df of correlation coefficients
+compEst_ml_df <- cbind(compEst_ml_df2013, compEst_ml_df2014)
+rownames(compEst_ml_df) <- c("wang", "quellergt", "dyadml", "trioml")
+
+# Find highest correlation coefficients for each year
+compEst_ml_max1 <- compEst_ml_df %>%
+  summarise(across(1:2, max)) %>%
+  as.vector() %>%
+  unname()
+
+# Find second-highest correlation coefficients for each year
+compEst_ml_max2 <- compEst_ml_df %>%
+  naniar::replace_with_na_all(condition = ~.x %in% as.numeric(compEst_ml_max1)) %>%
+  dplyr::summarise(across(1:2, max, na.rm = T)) %>%
+  as.vector() %>%
+  unname()
+
+# Table
+compEst_ml_df %>%
+  mutate(across(1:2, ~if_else(row_number() %in% which(. %in% compEst_ml_max1),
+                               cell_spec(.,format =  "html",
+                                         color = "orangered", bold = TRUE), as.character(.)))) %>% 
+  mutate(across(1:2, ~if_else(row_number() %in% which(. %in% compEst_ml_max2),
+                               cell_spec(.,format =  "html",
+                                         color = "darkorange", bold = TRUE), as.character(.)))) %>%
+  kbl(escape = FALSE) %>% 
+  kable_classic(full_width = T, 
+                font_size = 10)
+```
+
+Based on the comparisons between moment-estimators wang and quellergt vs. maximum-likelihood estimators dyadml and trioml, quellergt performs best in both 2013 and 2014.
+
+Given that quellergt also performed well when compared to point estimators alone and that quellergt was used for this population previously in Garber et al. (2016), I'm opting to use the quellergt estimator moving forward.
+
+## 5.3 Calculate pairwise relatedness
+
+Now that we know what relatedness estimator we're using (quellergt), we can calculate pairwise relatedness for the population using the coancestry() function. I'm calculating the relatedness estimates for 2013 and 2014 individuals combined with an estimated genotyping error rate of 1%, and am opting to include 95% CI estimates (option 2). Note that the bootstrap is automatically set to 100, but we can change that with "ci95.num.bootsrap=###".
+
+### 5.3.1 All individuals, 2013/2014 combined
+
+The coancestry() function outputs up to five dataframes depending on the estimator used. Since we're using Queller & Goodnight, we only need to be concerned with the "relatedness" dataframe.
+
+```{r}
+outfile_allIndivsCombined <- coancestry(
+  genotype.data = related_allCombined$gdata,
+  error.rates = 0.01,
+  quellergt = 2)
+```
+
+We can subset the outfile to just the Queller & Goodnight columns of interest below:
+
+```{r}
+# Subset to Queller-Goodnight + 95% CI only
+qt_point_allCombined <- outfile_allIndivsCombined$relatedness %>%
+  select(c(pair.no, ind1.id, ind2.id, group, quellergt)) %>%
+  dplyr::rename("qt_point" = "quellergt")
+
+qt_ci95_allCombined <- outfile_allIndivsCombined$relatedness.ci95 %>%
+  select(c(pair.no, quellergt.low, quellergt.high))
+
+outfile_allCombined_qt <- merge(qt_point_allCombined, qt_ci95_allCombined, by = "pair.no")
+```
+
+Export
+
+```{r, eval = F}
+write.csv(outfile_allCombined_qt, "./results_R/relatedEst_allCombined_17May2023.csv", row.names = F)
+```
+
+## 5.4 Sex vs. relatedness
+
+We can use the relatedness values above to help assess dispersal patterns. To do so, I'll be comparing simulated genotypes to observed genotypes for females and males in 2013 and 2014, following the scripts from [Sevchik et al. (2022)](http://corinalogan.com/Preregistrations/gdispersal_manuscript.html#Code) (see "Code/Analysis i: average relatedness and sex" section).
+
+### 5.4.1 Expected intrasexual realtedness (simulations)
+
+Perform a simulation (10000 permutations) to assess whether average relatedness among females/males is different from what we would expect in a random subset of the same number of individuals.
+
+```{r}
+# 2013
+simR_2013F <- matrix(ncol=1,nrow=10000)
+for (i in 1:10000) {
+  currentset <- sample(adults2013,length(adults2013F))
+  simR_2013F[i,1] <- mean(filter(outfile_allIndivsCombined$relatedness,
+                                 ind1.id %in% currentset,
+                                 ind2.id %in% currentset)$quellergt)
+}
+
+simR_2013M <- matrix(ncol=1,nrow=10000)
+for (i in 1:10000) {
+  currentset <- sample(adults2013,length(adults2013M))
+  simR_2013M[i,1] <- mean(filter(outfile_allIndivsCombined$relatedness,
+                                 ind1.id %in% currentset,
+                                 ind2.id %in% currentset)$quellergt)
+}
+
+# 2014
+simR_2014F <- matrix(ncol=1,nrow=10000)
+for (i in 1:10000) {
+  currentset <- sample(adults2014,length(adults2014F))
+  simR_2014F[i,1] <- mean(filter(outfile_allIndivsCombined$relatedness,
+                                 ind1.id %in% currentset,
+                                 ind2.id %in% currentset)$quellergt)
+}
+
+simR_2014M <- matrix(ncol=1,nrow=10000)
+for (i in 1:10000) {
+  currentset <- sample(adults2014,length(adults2014M))
+  simR_2014M[i,1] <- mean(filter(outfile_allIndivsCombined$relatedness,
+                                 ind1.id %in% currentset,
+                                 ind2.id %in% currentset)$quellergt)
+}
+```
+
+### 5.4.2 Observed intrasexual relatedness
+
+Summary stats of observed relatedness estimates among adult females and males in 2013 and 2014
+
+1)  Subset relatedness data for 2013/2014 adult females and males
+
+```{r}
+# 2013
+outfile_adults2013_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2013 & ind2.id %in% adults2013)
+outfile_adults2013F_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2013F & ind2.id %in% adults2013F)
+outfile_adults2013M_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2013M & ind2.id %in% adults2013M)
+
+# 2014
+outfile_adults2014_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2014 & ind2.id %in% adults2014)
+outfile_adults2014F_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2014F & ind2.id %in% adults2014F)
+outfile_adults2014M_qt <- outfile_allCombined_qt %>%
+  filter(ind1.id %in% adults2014M & ind2.id %in% adults2014M)
+```
+
+2)  Create list of dataframes
+
+```{r}
+adults_outfileList <- list(outfile_adults2013F_qt$qt_point,
+                        outfile_adults2013M_qt$qt_point,
+                        outfile_adults2014F_qt$qt_point,
+                        outfile_adults2014M_qt$qt_point)
+names(adults_outfileList) <- c("adults2013F", "adults2013M", "adults2014F", "adults2014M")
+```
+
+3)  Calculate mean & sd for each set
+
+```{r}
+meanSD <- function(x){
+  c(mean = mean(x), sd = sd(x))
+}
+
+meanSD_adults <- plyr::ldply(adults_outfileList, meanSD)
+```
+
+### 5.4.3 Observed vs. expected
+
+Is observed mean relatedness among females/males higher than expected by chance?
+
+The calculations below results in a value that is similar to a p-value; it reflects the probability that the average relatedness observed among males would be expected in a random subsample. From this, we see that neither females nor males in either year are more closely related than expected by chance, suggesting dispersal by both sexes.
+
+```{r}
+adults_simList <- list(simR_2013F, simR_2013M, simR_2014F, simR_2014M)
+
+intraFM_expVSobs <- function(x, y){
+  sum(x > mean(y))/10000
+}
+
+intraFM_compare <- mapply(intraFM_expVSobs, adults_simList, adults_outfileList) %>%
+  as.data.frame() %>%
+  dplyr::rename("probability" = ".") %>%
+  mutate(set = c("2013F", "2013M", "2014F", "2014M")) %>%
+  relocate(set, .before = probability)
+```
+
+### 5.4.4 Visualize simulated vs. observed data
+
+```{r}
+plot_2013F <- ggplot(as.data.frame(simR_2013F),
+                     aes(V1)) +
+  geom_histogram(fill = "black") +
+  geom_vline(aes(xintercept = mean(outfile_adults2013F_qt$qt_point)),
+             color = "red",
+             linetype = "dashed") +
+  annotate("label",
+           x = mean(outfile_adults2013F_qt$qt_point),
+           y = 1400,
+           label = "Mean (obs) = -0.03") +
+  theme_bw() +
+  labs(title = "2013 females",
+       x = "Simulated r-values",
+       y = "Count")
+
+plot_2013M <- ggplot(as.data.frame(simR_2013M), aes(V1)) +
+  geom_histogram(fill = "black") +
+  geom_vline(aes(xintercept = mean(outfile_adults2013M_qt$qt_point)),
+             color = "red",
+             linetype = "dashed") +
+  annotate("label",
+           x = mean(outfile_adults2013M_qt$qt_point),
+           y = 1100,
+           label = "Mean (obs) = -0.04") +
+  theme_bw() +
+  labs(title = "2013 males",
+       x = "Simulated r-values",
+       y = "Count")
+
+plot_2014F <- ggplot(as.data.frame(simR_2014F),
+                     aes(V1)) +
+
+  geom_histogram(fill = "black") +
+  geom_vline(aes(xintercept = mean(outfile_adults2014F_qt$qt_point)),
+             color = "red",
+             linetype = "dashed") +
+  annotate("label",
+           x = mean(outfile_adults2014F_qt$qt_point),
+           y = 1400,
+           label = "Mean (obs) = -0.3") +
+  theme_bw() +
+  labs(title = "2014 females", 
+       x = "Simulated r-values",
+       y = "Count")
+
+plot_2014M <- ggplot(as.data.frame(simR_2014M), aes(V1)) +
+  geom_histogram(fill = "black") +
+  geom_vline(aes(xintercept = mean(outfile_adults2014M_qt$qt_point)),
+             color = "red",
+             linetype = "dashed") +
+  annotate("label",
+           x = mean(outfile_adults2014M_qt$qt_point),
+           y = 1100,
+           label = "Mean (obs) = 0.01") +
+  theme_bw() +
+  labs(title = "2014 males", 
+       x = "Simulated r-values",
+       y = "Count")
+
+ggarrange(plot_2013F, plot_2013M, plot_2014F, plot_2014M,
+          ncol = 2,
+          nrow = 2)
+```
+
+Since we want to compare pairwise relatedness among females/males and between 2013/2014 populations, we first need to assess data normality.
+
+The Shapiro-Wilk tests reject normality for all groups; however, this measure is often inaccurate for large sample sizes (see: <https://stats.stackexchange.com/questions/2492/is-normality-testing-essentially-useless>).
+
+QQ-plots look fairly ok, but are skewed at the tails. Perhaps safer to just go with a non-parametric test?
+
+```{r}
+library(moments)
+
+skewness(pairwiseR_adults2013F$quellergt)
+kurtosis(pairwiseR_adults2013F$quellergt)
+jarque.test(pairwiseR_adults2013F$quellergt)
+
+shapiro_test(pairwiseR_adults2013F, quellergt) # not normal
+ggqqplot(pairwiseR_adults2013F, x = "quellergt")
+plot(density(pairwiseR_adults2013F$quellergt))
+
+shapiro_test(pairwiseR_adults2013M, quellergt) # not normal
+ggqqplot(pairwiseR_adults2013M, x = "quellergt")
+plot(density(pairwiseR_adults2013M$quellergt))
+
+shapiro_test(pairwiseR_adults2014F, quellergt) # not normal
+ggqqplot(pairwiseR_adults2014F, x = "quellergt")
+plot(density(pairwiseR_adults2014F$quellergt))
+
+shapiro_test(pairwiseR_adults2014M, quellergt) # not normal
+ggqqplot(pairwiseR_adults2014M, x = "quellergt")
+plot(density(pairwiseR_adults2014M$quellergt))
+```
+
+```{r}
+wilcox.test(pairwiseR_adults2013F$quellergt, pairwiseR_adults2013M$quellergt,
+            alternative = "two.sided")
+
+wilcox.test(pairwiseR_adults2014F$quellergt, pairwiseR_adults2014M$quellergt,
+            alternative = "two.sided")
+```
+
+## 5.5 Groups vs. relatedness
+
+We can test if individuals within groups are more related than expected using the function 'grouprel'. This function calculates the average relatedness within each of the specified groups and will generate a distribution of 'expected' relatedness values by randomly shuffling individuals between groups, while keeping each group size constant and calculating the average relatedness within each group for each randomization step. It will then generate plots comparing the observed and expected values. It also writes a file called "observed-r.csv", and another one called "expectedrel.csv" to your working directory, containing the observed and expected values, respectively, so that you can conduct further analyses of these data.
+
+### 5.5.1 Adult genotype data
+
+Since group relatedness estimates are just for adults, first we need to subset genotype data to adults only for both 2013 and 2014. Then we need to make a few adjustment to group IDs prior to running group relatedness analyses, including:
+
+1)  Change LV-B-VO group ID to NV for both 2013 and 2014 - this individual was in the NV group for the majority of 2013 and stayed in that group in 2014
+2)  Create input_adults2013a with MO- and VO- groups combined - these groups didn't split until August 2013
+3)  Create input_adults2013b with MO- and VO- groups split
+
+```{r}
+# 2013a adults (pre- MO/VO split)
+genos_forRelated_adults2013a <- data_clean %>%
+  filter(sampleID %in% adults2013) %>%
+  mutate(sampleID = str_replace_all(sampleID,
+                                    pattern = c("LV-B-VO" = "NV-LV-B-VO",
+                                                "MO-" = "VO-")))
+  
+# 2013b adults (post MO/VO split)
+genos_forRelated_adults2013b <- data_clean %>%
+  filter(sampleID %in% adults2013) %>%
+  mutate(sampleID = str_replace_all(sampleID,
+                                    pattern = c("LV-B-VO" = "NV-LV-B-VO")))
+
+# 2014 adults
+genos_forRelated_adults2014 <- data_clean %>%
+  filter(sampleID %in% adults2014) %>%
+  mutate(sampleID = str_replace_all(sampleID,
+                                    pattern = c("LV-B-VO" = "NV-LV-B-VO")))
+```
+
+Then we can turn these into 'related' genotype data
+
+```{r}
+related_adults2013a <- readgenotypedata(genos_forRelated_adults2013a)
+related_adults2013b <- readgenotypedata(genos_forRelated_adults2013b)
+related_adults2014 <- readgenotypedata(genos_forRelated_adults2014)
+```
+
+### 5.5.2 Run 'grouprel'
+
+The grouprel() function does the following:
+
+-   Estimates all pairwise relatedness values within each group and take their average + exports to "observed-r.csv". NOTE - will need to rename these so they don't overwrite since we're doing three separate runs!
+
+-   Randomly shuffles the order of individuals in the genotype file, but keeps rows representing each group constant + exports to "expectedrel.csv". Rename these files too!
+
+-   Generates figures from data that show...
+
+    -   a histogram of expected relatedness within each group
+    -   a red arrow indicating where the observed value lies
+    -   a title indicating the group comparison
+    -   a p-value indicating the percentage of randomized iterations where the expected values were greater than or equal to the observed value
+    
+Note that this function also takes a while to run!
+
+```{r, eval=FALSE}
+# 2013a - VO- and MO- groups together (through July 2013)
+grouprel(genotypes = related_adults2013a$gdata, estimatorname = "quellergt", usedgroups = "all", iterations = 10000)
+
+# 2013b - VO- and MO- groups separate (separated in August 2013)
+grouprel(genotypes = related_adults2013b$gdata, estimatorname = "quellergt", usedgroups = "all", iterations = 10000)
+
+# 2014
+grouprel(genotypes = related_adults2014$gdata, estimatorname = "quellergt", usedgroups = "all", iterations = 10000)
+```
+
+### 5.5.3 Plots
+
+The grouprel() function is nice, but doesn't actually result in an ouptut that can be turned into an R object. As such, I'm reloading the csv output files and recreating the plots here.
+
+Note that the columns in the "expected" csv files contain one column for each group in the analyses and one row for each iteration performed, with the order of columns corresponding to the order of groups in the "observed" files.
+
+Load data
+```{r}
+# Observed within-group relatedness values
+grpRel_2013a_obs <- read.csv("./results_R/observed-r_2013a_23May2023.csv") %>%
+  dplyr::rename("2013a r-values" = "relvalues") %>%
+  select(-X)
+grpRel_2013b_obs <- read.csv("./results_R/observed-r_2013b_23May2023.csv") %>%
+  dplyr::rename("2013b r-values" = "relvalues") %>%
+  select(-X)
+grpRel_2014_obs <- read.csv("./results_R/observed-r_2014_23May2023.csv") %>%
+  dplyr::rename("2014 r-values" = "relvalues") %>%
+  select(-X)
+
+# Expected within-group relatedness values
+grpRel_2013a_exp <- read.csv("./results_R/expectedrel_2013a_23May2023.csv") %>%
+  select(-X)
+colnames(grpRel_2013a_exp) <- c(grpRel_2013a_obs$within, "Overall")
+
+grpRel_2013b_exp <- read.csv("./results_R/expectedrel_2013b_23May2023.csv") %>%
+  select(-X)
+colnames(grpRel_2013b_exp) <- c(grpRel_2013b_obs$within, "Overall")
+
+grpRel_2014_exp <- read.csv("./results_R/expectedrel_2014_23May2023.csv") %>%
+  select(-X)
+colnames(grpRel_2014_exp) <- c(grpRel_2014_obs$within, "Overall")
+```
+
+Recreate plots
+
+```{r}
+# 2013a
+vlines_2013a <- grpRel_2013a_obs %>%
+  dplyr::rename("key" = "within",
+                "vline" = "2013a r-values") %>%
+  add_row(key = "Overall", vline = mean(grpRel_2013a_obs$`2013a r-values`))
+
+ggplot(gather(grpRel_2013a_exp), aes(value)) +
+  geom_histogram() +
+  theme_bw() +
+  facet_wrap(~key, scales = "free_x") +
+  geom_vline(data = vlines_2013a,
+             aes(xintercept = vline),
+             color = "red") +
+  labs(title = "Expected vs. observed within-group relatedness (2013a)")
+
+# 2013b
+vlines_2013b <- grpRel_2013b_obs %>%
+  dplyr::rename("key" = "within",
+                "vline" = "2013b r-values") %>%
+  add_row(key = "Overall", vline = mean(grpRel_2013b_obs$`2013b r-values`))
+
+ggplot(gather(grpRel_2013b_exp), aes(value)) +
+  geom_histogram() +
+  theme_bw() +
+  facet_wrap(~key, scales = "free_x") +
+  geom_vline(data = vlines_2013b,
+             aes(xintercept = vline),
+             color = "red") +
+  labs(title = "Expected vs. observed within-group relatedness (2013b)")
+
+# 2014
+vlines_2014 <- grpRel_2014_obs %>%
+  dplyr::rename("key" = "within",
+                "vline" = "2014 r-values") %>%
+  add_row(key = "Overall", vline = mean(grpRel_2014_obs$`2014 r-values`))
+
+ggplot(gather(grpRel_2014_exp), aes(value)) +
+  geom_histogram() +
+  theme_bw() +
+  facet_wrap(~key, scales = "free_x") +
+  geom_vline(data = vlines_2014,
+             aes(xintercept = vline),
+             color = "red") +
+  labs(title = "Expected vs. observed within-group relatedness (2014)")
+```
+
+### Table 4: Observed within-group relatedness
+
+```{r}
+# Merge results
+grouprel_df <- merge(grpRel_2013a_obs, grpRel_2013b_obs, by = "within", all = T) %>%
+  merge(., grpRel_2014_obs, by = "within", all = T) %>%
+  dplyr::rename("group" = "within")
+
+# Create table
+
+```
+
+
+
+
+# 6 Cervus
+
+EDIT 17 MAY 2023: I couldn't get this to work -- running the CervusALF() function opened the Cervus CL folder through wine, but I think there's an issue related to reading/writing files. The console output shows a variety of "fixme" messages, among them "fixme:nstc...mask & style...contains unsupported style(s)" and I don't know how to fix them.
+
+------------------------------------------------------------------------
+
+We can use the software Cervus to run parentage analyses, but to do so with Linux or MacOS we have to use Wine -- it works, but it's a bit clunky.
+
+Iain Moodie developed the R package 'ceRvus' to interact with Cervus from within an R environment, including functions to make working with Cervus via Wine easier.
+
+Installation:
+
+```{r}
+devtools::install_github("irmoodie/ceRvus");
+```
+
+## 6.1 Create genotype files
+
+### 6.1.1 Load genos pre-formatted for Cervus
+
+I manually formatted the original genotype file for Cervus, and below I'm removing individuals with NAs
+
+```{r}
+cervusGenotypes <- read.csv("./cervus/inputFiles/cervusGenotypes_all.csv") %>%
+  drop_na()
+```
+
+### 6.1.2 Remove duplicate individuals
+
+From 'allelematch' (Section 3), we know that LV-B-N1A is duplicate of LV-B-MO, VO-R-JU1 = MO-R-MP, and VO-R-JU2 = MO-R-CR. I'm ditching the ones in each pair that seem to have allelic dropout (LV-B-N1A, MO-R-MP, MO-R-CR)
+
+```{r}
+cervusGenotypes_unique <- cervusGenotypes %>%
+  filter(!sampleID %in% c("LV-B-N1A", "MO-R-MP", "MO-R-CR"))
+ 
+md_unique <- md_genotyped %>%
+  filter(!sampleID %in% c("LV-B-N1A", "MO-R-MP", "MO-R-CR"))
+
+write.csv(cervusGenotypes_unique, "./cervus/cervusR/cervusGenotypes_unique.csv", row.names = F)
+```
+
+### 6.1.3 2013 & 2014 subsets
+
+```{r}
+cervusGenotypes_2013 <- cervusGenotypes_unique %>%
+  filter(sampleID %in% indivInfo_unique$sampleID[indivInfo_unique$present2013 == "yes"],)
+
+cervusGenotypes_2014 <- cervusGenotypes_unique %>%
+  filter(sampleID %in% indivInfo_unique$sampleID[indivInfo_unique$present2014 == "yes"],)
+```
+
+Export
+
+```{r}
+write.csv(cervusGenotypes_2013, "./cervus/cervusR/cervusGenotypes_2013.csv", row.names = F)
+write.csv(cervusGenotypes_2014, "./cervus/cervusR/cervusGenotypes_2014.csv", row.names = F)
+```
+
+## 6.2 Allele frequency analysis
+
+Find CervusCL.exe path
+
+```{bash}
+winepath -w CervusCL.exe
+```
+
+```{r}
+ceRvus::CervusALF(CervusCLPath = "/home/rachelvoyt/.wine/drive_c/Program Files (x86)/Field Genetics/Cervus/Cervus CL/",
+                  AnalysisFolderPath = "/home/rachelvoyt/.wine/drive_c/Program Files (x86)/Field Genetics/Cervus",
+                  AnalysisName = "cervusAnalysis",
+                  ImportALF = T,
+                  ResultsToConsole = T,
+                  GenotypeFile_FileName = "cervusGenotypes_unique.csv",
+                  GenotypeFile_HasHeader = T,
+                  GenotypeFile_ReadLocusNames = T,
+                  GenotypeFile_IDColumnNumber = 1,
+                  GenotypeFile_NLoci = 11,
+                  GenotypeFile_FirstAlleleColumnNumber = 2,
+                  DoHardyWeinberg = T,
+                  HWMinExpectedFrequency = 5,
+                  UseYatesCorrection = T,
+                  UseBonferroniCorrection = T,
+                  DoNullAllele = T,
+                  wineCommand = "wine",
+                  wineHomeDirectory = "Z:",
+                  wineTempDirectory = "/home/rachelvoyt/.wine/drive_c/users/rachelvoyt/Temp")
+```
+
+# X Other popgen R packages of interest
+
+-   polsat - good for autopolyploid and allopolyploid microsatellite data
+-   poppr - for analyses of populations with mixed modes of sexual and clonal reproduction, uses adegenet
+
+# Resources
+
+-   To format data for genind files, see how to replace unique values with index number using mutate function: <https://stackoverflow.com/questions/55799031/how-to-replace-unique-values-with-index-number-using-mutate-function>
+-   Information on effective allele frequency: <http://www.uwyo.edu/dbmcd/molmark/waap.html>
+-   'related' tutorial with grackles (Sevchick et al., 2021)
