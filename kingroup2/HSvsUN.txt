@@ -1,0 +1,56 @@
+*, KINSHIP PRIMARY/NULL RATIO [base 10 log]
+*, Primary
+*, Rm = 0.5  Rp = 0
+*, Null
+*, Rm = 0  Rp = 0
+*, 1000 simulated pairs used to perform significance test.
+*, p<, log10, type II
+*, *5%, 0.5561, 33%
+*, **1%, 1.2642, 61%
+*, ***0.1%, 1.7181, 76%
+*,  , AO-B-AP, AO-B-JU, AO-B-NV, AO-R-CR, AO-R-NV, AP-B-AO, AP-B-CR, AP-B-LV, AP-B-MO, AP-B-OX, AP-R-AP, AP-R-JU, AP-R-NV, AP-X-JU1, CR-B-LV, CR-B-VO, CR-R-CR, CR-R-MP, LV-B-CR, LV-B-MO, LV-B-VO, LV-R-NV, LV-X-INB, MO-B-LV, MO-R-NV, NV-B-AP, NV-B-CR, NV-B-LV, NV-B-MO, NV-B-MP, NV-B-NV, NV-B-NV2, NV-B-VP, NV-R-JU, NV-R-JU1, NV-R-JU2, NV-R-LV, NV-R-VO, VO-B-AP, VO-B-JU, VO-B-MO, VO-R-AO, VO-R-JU1, VO-R-JU2, VO-R-LV
+*, AO-B-AP,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-B-JU, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-B-NV, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-R-CR, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-R-NV, ns, *, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-AO, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-CR, ns, ns, ns, ns, ns, *,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-LV, ns, ns, ns, ns, ***, ***, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-MO, ns, *, ns, ns, *, ns, ns, *,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-OX, ns, ns, ns, ns, ns, *, ***, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-AP, ns, ns, ns, ns, ns, ***, ***, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-JU, ns, ns, ns, ns, ns, ***, ns, ***, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-NV, ns, ns, ns, ns, ns, ***, ns, ***, ns, *, ***, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-X-JU1, ns, ns, ns, ns, ns, ***, ns, *, ns, **, ***, **, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-B-LV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-B-VO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-R-CR, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-R-MP, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-CR, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-MO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-VO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-R-NV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-X-INB, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, MO-B-LV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, MO-R-NV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-AP, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-CR, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-LV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, *, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-MO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, **, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-MP, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-NV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-NV2, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-VP, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, **, ns, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU1, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, ***, *, *, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU2, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, *, *, ns, ns, ns, ns, ns, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-LV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, ns, ***, ***, ns, ns, ns, ns, ***, ***,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-VO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, **, ns, ns, ns, ns, ns, ns, ***,  ,  ,  ,  ,  ,  ,  ,  
+*, VO-B-AP, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, **, ns, *, ns, ns, ns, **, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  ,  
+*, VO-B-JU, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  ,  
+*, VO-B-MO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns,  ,  ,  ,  ,  
+*, VO-R-AO, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, *, *, ns, ns,  ,  ,  ,  
+*, VO-R-JU1, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ***, ns, *,  ,  ,  
+*, VO-R-JU2, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, *, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, **, ns, ns, ns, ns,  ,  
+*, VO-R-LV, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, **, ns, ns, ***, ns, ns, ns, ns, ns, ns, *, ns, ns, *, ***, **, ns, ***, **, ns,  

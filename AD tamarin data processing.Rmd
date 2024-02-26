@@ -1,0 +1,128 @@
+---
+title: "AD tamarin data processing"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+should MO-B-LV be LV-B-MO? doesn't look like it b/c genos different
+should MO-R-NV be NV-R-MO? doesn't look like it b/c genos different
+
+drop LV-B-N1A, MO-R-CR, MO-R-MP from genotype data
+
+# Kinship Analyses with KINGROUP2 Data
+
+```{r}
+library(tidyverse)
+library(Hmisc)
+n <- 45 # number of individuals
+pairwise_R_kingroup <- read_csv("genotypes.txt", skip = n + 4, col_select = -1, n_max = n)
+names(pairwise_R_kingroup)[1] <- "ind1.id"
+pairwise_R_kingroup[1,2] <- NA
+pairwise_R_kingroup[[2]] <- as.numeric(pairwise_R_kingroup[[2]])
+
+pairwise_R_kingroup <- pairwise_R_kingroup %>%
+  pivot_longer(cols = !"ind1.id", names_to =  "ind2.id", values_to = "quellergt") %>%
+  filter(!is.na(quellergt)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id))
+```
+
+## Processing Results of Analyses of Likely Close Kin
+
+```{r}
+# There are six relevant files stored in the folder "kingroup2" within the repository. These are the results for running full sibling (FS) versus unrelated (UR), half sibling (HS) versus unrelated, and parent-offspring (PO) versus unrelated likelihood ratio tests as well as PO vs FS, PO vs HS, and FS vs HS. The original KINGROUP2 results files were edited to include just the likelihood ratio test results.
+
+# full sibling versus unrelated...
+fs_vs_un <- read_csv("kingroup2/FSvsUN.txt", skip = 10, col_select = -1, n_max = n)
+names(fs_vs_un)[1] <- "ind1.id"
+fs_vs_un <- fs_vs_un %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "FS_UN_sig") %>% # pivot to column format
+  filter(!is.na(FS_UN_sig)) %>% # remove diagonals
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(FS_UN_sig2 = if_else(FS_UN_sig != "ns","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# half sibling versus unrelated...
+hs_vs_un <- read_csv("kingroup2/HSvsUN.txt", skip = 10, col_select = -1, n_max = n)
+names(hs_vs_un)[1] <- "ind1.id"
+hs_vs_un <- hs_vs_un %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "HS_UN_sig") %>%
+  filter(!is.na(HS_UN_sig)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(HS_UN_sig2 = if_else(HS_UN_sig != "ns","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# parent-offspring versus unrelated
+po_vs_un <- read_csv("kingroup2/POvsUN.txt", skip = 10, col_select = -1, n_max = n)
+names(po_vs_un)[1] <- "ind1.id"
+po_vs_un <- po_vs_un %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "PO_UN_sig") %>%
+  filter(!is.na(PO_UN_sig)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(PO_UN_sig2 = if_else(PO_UN_sig != "x","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# parent-offspring versus full sibling
+po_vs_fs <- read_csv("kingroup2/POvsFS.txt", skip = 10, col_select = -1, n_max = n)
+names(po_vs_fs)[1] <- "ind1.id"
+po_vs_fs <- po_vs_fs %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "PO_FS_sig") %>%
+  filter(!is.na(PO_FS_sig)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(PO_FS_sig2 = if_else(PO_FS_sig != "x","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# parent-offspring versus half sibling
+po_vs_hs <- read_csv("kingroup2/POvsHS.txt", skip = 10, col_select = -1, n_max = n)
+names(po_vs_hs)[1] <- "ind1.id"
+po_vs_hs <- po_vs_hs %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "PO_HS_sig") %>%
+  filter(!is.na(PO_HS_sig)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(PO_HS_sig2 = if_else(PO_HS_sig != "x","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# full sibling versus half sibling
+fs_vs_hs <- read_csv("kingroup2/FSvsHS.txt", skip = 10, col_select = -1, n_max = n)
+names(fs_vs_hs)[1] <- "ind1.id"
+fs_vs_hs <- fs_vs_hs %>%
+  pivot_longer(cols = !"ind1.id", names_to = "ind2.id", values_to = "FS_HS_sig") %>%
+  filter(!is.na(FS_HS_sig)) %>%
+  mutate(pair = paste0(ind1.id,"=",ind2.id)) %>%
+  mutate(FS_HS_sig2 = if_else(FS_HS_sig != "ns","*","ns")) %>%
+  left_join(., pairwise_R_kingroup, by = c("ind1.id" = "ind1.id", "ind2.id" = "ind2.id", "pair" = "pair"))
+
+# compare quellergt from Kingroup2 with that from {related}
+pairwise_R_related <- read_csv("results_R/relatedEst_allCombined_17May2023.csv",
+                               col_names = TRUE) %>%
+  mutate(pair = paste0(ind2.id,"=",ind1.id))
+
+summary <- fs_vs_un %>%
+  inner_join(hs_vs_un, by = c("ind1.id", "ind2.id", "pair", "quellergt")) %>%
+  inner_join(fs_vs_hs, by = c("ind1.id", "ind2.id", "pair", "quellergt")) %>%
+  inner_join(po_vs_fs, by = c("ind1.id", "ind2.id", "pair", "quellergt")) %>%
+  inner_join(po_vs_hs, by = c("ind1.id", "ind2.id", "pair", "quellergt")) %>%
+  inner_join(po_vs_un, by = c("ind1.id", "ind2.id", "pair", "quellergt")) %>%
+  inner_join(pairwise_R_related, by = c("ind1.id" = "ind2.id", "ind2.id" = "ind1.id", "pair" = "pair")) %>%
+  mutate(group = paste0(str_sub(ind1.id, start = 1, end=2), str_sub(ind2.id, start = 1, end=2))) %>%
+  select(c("ind1.id", "ind2.id", "pair", "group", "quellergt", "qt_point", "quellergt.low", "quellergt.high", "FS_UN_sig2", "HS_UN_sig2", "FS_HS_sig2", "PO_FS_sig2", "PO_HS_sig2", "PO_UN_sig2")) %>%
+  rowwise() %>%
+  mutate(count = sum(FS_UN_sig2 == "*",
+                     HS_UN_sig2 == "*",
+                     PO_UN_sig2 == "*",
+                     FS_HS_sig2 == "*",
+                     PO_FS_sig2 == "*",
+                     PO_HS_sig2 == "*"))
+```
+
+```{r}
+# compare quellergt from Kingroup2 with that from {related}
+
+p <- ggplot(summary, aes(x = quellergt, y = qt_point)) +
+  geom_point()
+p
+
+relatives <- summary %>%
+  filter(count > 0) %>%
+  filter(group %in% c("AOAO", "APAP", "CRCR", "LVLV", "NVNV", "VOVO", "MOMO"))
+```

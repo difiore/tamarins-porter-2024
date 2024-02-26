@@ -1,0 +1,56 @@
+*, KINSHIP PRIMARY/NULL RATIO [base 10 log]
+*, Primary
+*, Rm = 1  Rp = 0
+*, Null
+*, Rm = 0.5  Rp = 0
+*, 1000 simulated pairs used to perform significance test.
+*, p<, log10, type II
+*, *5%, x, 0%
+*, **1%, 1.3684, 40%
+*, ***0.1%, 1.647, 78%
+*,  , AO-B-AP, AO-B-JU, AO-B-NV, AO-R-CR, AO-R-NV, AP-B-AO, AP-B-CR, AP-B-LV, AP-B-MO, AP-B-OX, AP-R-AP, AP-R-JU, AP-R-NV, AP-X-JU1, CR-B-LV, CR-B-VO, CR-R-CR, CR-R-MP, LV-B-CR, LV-B-MO, LV-B-VO, LV-R-NV, LV-X-INB, MO-B-LV, MO-R-NV, NV-B-AP, NV-B-CR, NV-B-LV, NV-B-MO, NV-B-MP, NV-B-NV, NV-B-NV2, NV-B-VP, NV-R-JU, NV-R-JU1, NV-R-JU2, NV-R-LV, NV-R-VO, VO-B-AP, VO-B-JU, VO-B-MO, VO-R-AO, VO-R-JU1, VO-R-JU2, VO-R-LV
+*, AO-B-AP,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-B-JU, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-B-NV, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-R-CR, x, x, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AO-R-NV, x, *, x, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-AO, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-CR, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-LV, x, x, x, x, x, *, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-MO, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-B-OX, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-AP, x, x, x, x, x, **, ***, x, x, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-JU, x, x, x, x, x, x, x, *, x, x, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-R-NV, x, x, x, x, x, x, x, *, x, x, **, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, AP-X-JU1, x, x, x, x, x, ***, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-B-LV, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-B-VO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-R-CR, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, CR-R-MP, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-CR, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-MO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-B-VO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-R-NV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, LV-X-INB, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, *, x, x, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, MO-B-LV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, MO-R-NV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-AP, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-CR, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-LV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-MO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-MP, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, **,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-NV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, **, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-NV2, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-B-VP, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, ***,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU1, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, *, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-JU2, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-LV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, **, x, x, **, *, x, x, x, x, **, *,  ,  ,  ,  ,  ,  ,  ,  ,  
+*, NV-R-VO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, *, x, x, x, x, x, x, x, **,  ,  ,  ,  ,  ,  ,  ,  
+*, VO-B-AP, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  ,  
+*, VO-B-JU, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  ,  
+*, VO-B-MO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  ,  
+*, VO-R-AO, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  ,  
+*, VO-R-JU1, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  ,  
+*, VO-R-JU2, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x,  ,  
+*, VO-R-LV, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, *, x, x, *, x, x, x, x, x, x, x, x, x, x, *, *, x, **, *, x,  
